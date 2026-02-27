@@ -151,38 +151,42 @@ wait_manager_ready() {
 # ============================================================
 
 send_welcome_message() {
+    local container="hiclaw-manager"
     local admin_user="${HICLAW_ADMIN_USER:-admin}"
     local admin_password="${HICLAW_ADMIN_PASSWORD}"
     local matrix_domain="${HICLAW_MATRIX_DOMAIN}"
-    local matrix_url="http://${matrix_domain%%:*}:${HICLAW_PORT_GATEWAY:-18080}"
+    local matrix_url="http://127.0.0.1:6167"
     local manager_user="manager"
     local manager_full_id="@${manager_user}:${matrix_domain}"
     local timezone="${HICLAW_TIMEZONE}"
-    
+
+    # Helper: run curl inside the manager container to reach Matrix directly
+    mcurl() { docker exec "${container}" curl "$@"; }
+
     # Login to get admin access token
     log "Logging in as ${admin_user} to send welcome message..."
     local login_resp
-    login_resp=$(curl -sf -X POST "${matrix_url}/_matrix/client/v3/login" \
+    login_resp=$(mcurl -sf -X POST "${matrix_url}/_matrix/client/v3/login" \
         -H 'Content-Type: application/json' \
-        -d "{\"type\":\"m.login.password\",\"identifier\":{\"type\":\"m.id.user\",\"user\":\"${admin_user}\"},\"password\":\"${admin_password}\"}" 2>/dev/null) || return 1
-    
+        -d "{\"type\":\"m.login.password\",\"identifier\":{\"type\":\"m.id.user\",\"user\":\"${admin_user}\"},\"password\":\"${admin_password}\"}" 2>/dev/null)
+
     local access_token
     access_token=$(echo "${login_resp}" | jq -r '.access_token // empty')
     if [ -z "${access_token}" ]; then
         log "WARNING: Failed to login as ${admin_user}, skipping welcome message"
         return 1
     fi
-    
+
     # Find or create DM room with manager
     log "Finding DM room with Manager..."
     local rooms
-    rooms=$(curl -sf "${matrix_url}/_matrix/client/v3/joined_rooms" \
+    rooms=$(mcurl -sf "${matrix_url}/_matrix/client/v3/joined_rooms" \
         -H "Authorization: Bearer ${access_token}" 2>/dev/null | jq -r '.joined_rooms[]' 2>/dev/null) || true
-    
+
     local room_id=""
     for rid in ${rooms}; do
         local members
-        members=$(curl -sf "${matrix_url}/_matrix/client/v3/rooms/${rid}/members" \
+        members=$(mcurl -sf "${matrix_url}/_matrix/client/v3/rooms/${rid}/members" \
             -H "Authorization: Bearer ${access_token}" 2>/dev/null | jq -r '.chunk[].state_key' 2>/dev/null) || continue
         local member_count
         member_count=$(echo "${members}" | wc -l | xargs)
@@ -191,29 +195,29 @@ send_welcome_message() {
             break
         fi
     done
-    
+
     if [ -z "${room_id}" ]; then
         log "Creating DM room with Manager..."
         local create_resp
-        create_resp=$(curl -sf -X POST "${matrix_url}/_matrix/client/v3/createRoom" \
+        create_resp=$(mcurl -sf -X POST "${matrix_url}/_matrix/client/v3/createRoom" \
             -H "Authorization: Bearer ${access_token}" \
             -H 'Content-Type: application/json' \
-            -d "{\"is_direct\":true,\"invite\":[\"${manager_full_id}\"],\"preset\":\"trusted_private_chat\"}" 2>/dev/null) || return 1
+            -d "{\"is_direct\":true,\"invite\":[\"${manager_full_id}\"],\"preset\":\"trusted_private_chat\"}" 2>/dev/null)
         room_id=$(echo "${create_resp}" | jq -r '.room_id // empty')
     fi
-    
+
     if [ -z "${room_id}" ]; then
         log "WARNING: Could not find or create DM room with Manager"
         return 1
     fi
-    
+
     # Wait for Manager to join the room
     log "Waiting for Manager to join the room..."
     local wait_elapsed=0
     local wait_timeout=60
     while [ "${wait_elapsed}" -lt "${wait_timeout}" ]; do
         local members
-        members=$(curl -sf "${matrix_url}/_matrix/client/v3/rooms/${room_id}/members" \
+        members=$(mcurl -sf "${matrix_url}/_matrix/client/v3/rooms/${room_id}/members" \
             -H "Authorization: Bearer ${access_token}" 2>/dev/null | jq -r '.chunk[].state_key' 2>/dev/null) || true
         if echo "${members}" | grep -q "${manager_full_id}"; then
             break
@@ -221,7 +225,7 @@ send_welcome_message() {
         sleep 2
         wait_elapsed=$((wait_elapsed + 2))
     done
-    
+
     # Send welcome message
     log "Sending welcome message to Manager..."
     local welcome_msg
@@ -237,14 +241,14 @@ You have just completed the installation and initialization. As the Manager agen
 The human admin will start chatting with you shortly. Please wait for their response before proceeding with any tasks."
 
     local txn_id="welcome-$(date +%s%N)"
-    curl -sf -X PUT "${matrix_url}/_matrix/client/v3/rooms/${room_id}/send/m.room.message/${txn_id}" \
+    mcurl -sf -X PUT "${matrix_url}/_matrix/client/v3/rooms/${room_id}/send/m.room.message/${txn_id}" \
         -H "Authorization: Bearer ${access_token}" \
         -H 'Content-Type: application/json' \
         -d "{\"msgtype\":\"m.text\",\"body\":\"${welcome_msg}\"}" > /dev/null 2>&1 || {
         log "WARNING: Failed to send welcome message"
         return 1
     }
-    
+
     log "Welcome message sent to Manager"
     return 0
 }
