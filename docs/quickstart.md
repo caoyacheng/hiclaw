@@ -39,26 +39,18 @@ Follow the interactive prompts to configure:
 
 Both methods support environment variable overrides for all settings. See `install/hiclaw-install.sh` header for the full list.
 
-### 1.2 Configure DNS
+### 1.2 Login to Element Web
 
-Add the following to your `/etc/hosts` file:
-
-```
-127.0.0.1 matrix-local.hiclaw.io matrix-client-local.hiclaw.io aigw-local.hiclaw.io fs-local.hiclaw.io
-```
-
-### 1.3 Login to Element Web
-
-Open http://matrix-client-local.hiclaw.io:8080 in your browser.
+Open http://127.0.0.1:18088 in your browser.
 
 Login with your admin credentials.
 
 ### Verification Checklist
 
 - [ ] Manager container is running: `docker ps | grep hiclaw-manager`
-- [ ] Element Web loads in browser at http://matrix-client-local.hiclaw.io:8080
+- [ ] Element Web loads in browser at http://127.0.0.1:18088
 - [ ] Login with admin credentials succeeds
-- [ ] Higress Console accessible at http://localhost:8001
+- [ ] Higress Console accessible at http://localhost:18001
 - [ ] MinIO Console accessible at http://localhost:9001
 
 ---
