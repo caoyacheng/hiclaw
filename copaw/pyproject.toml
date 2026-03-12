@@ -10,7 +10,7 @@ readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.10"
 dependencies = [
-    "copaw>=0.0.5",
+    "copaw==0.5.0",
     "matrix-nio>=0.24.0",
 ]
 
