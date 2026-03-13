@@ -1,6 +1,6 @@
 <a name="readme-top"></a>
 <h1 align="center">
-    <img src="https://img.alicdn.com/imgextra/i4/O1CN01zc7N6W1JRV5woDRtG_!!6000000001025-2-tps-1490-391.png" alt="HiClaw"  width="290" height="72.5">
+    <img src="https://img.alicdn.com/imgextra/i1/O1CN014DQemZ257thQOBg8L_!!6000000007480-55-tps-1489-391.svg" alt="HiClaw"  width="290" height="72.5">
 
 <p align="center">
   <a href="https://deepwiki.com/higress-group/hiclaw"><img src="https://img.shields.io/badge/DeepWiki-Ask_AI-navy.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAyCAYAAAAnWDnqAAAAAXNSR0IArs4c6QAAA05JREFUaEPtmUtyEzEQhtWTQyQLHNak2AB7ZnyXZMEjXMGeK/AIi+QuHrMnbChYY7MIh8g01fJoopFb0uhhEqqcbWTp06/uv1saEDv4O3n3dV60RfP947Mm9/SQc0ICFQgzfc4CYZoTPAswgSJCCUJUnAAoRHOAUOcATwbmVLWdGoH//PB8mnKqScAhsD0kYP3j/Yt5LPQe2KvcXmGvRHcDnpxfL2zOYJ1mFwrryWTz0advv1Ut4CJgf5uhDuDj5eUcAUoahrdY/56ebRWeraTjMt/00Sh3UDtjgHtQNHwcRGOC98BJEAEymycmYcWwOprTgcB6VZ5JK5TAJ+fXGLBm3FDAmn6oPPjR4rKCAoJCal2eAiQp2x0vxTPB3ALO2CRkwmDy5WohzBDwSEFKRwPbknEggCPB/imwrycgxX2NzoMCHhPkDwqYMr9tRcP5qNrMZHkVnOjRMWwLCcr8ohBVb1OMjxLwGCvjTikrsBOiA6fNyCrm8V1rP93iVPpwaE+gO0SsWmPiXB+jikdf6SizrT5qKasx5j8ABbHpFTx+vFXp9EnYQmLx02h1QTTrl6eDqxLnGjporxl3NL3agEvXdT0WmEost648sQOYAeJS9Q7bfUVoMGnjo4AZdUMQku50McDcMWcBPvr0SzbTAFDfvJqwLzgxwATnCgnp4wDl6Aa+Ax283gghmj+vj7feE2KBBRMW3FzOpLOADl0Isb5587h/U4gGvkt5v60Z1VLG8BhYjbzRwyQZemwAd6cCR5/XFWLYZRIMpX39AR0tjaGGiGzLVyhse5C9RKC6ai42ppWPKiBagOvaYk8lO7DajerabOZP46Lby5wKjw1HCRx7p9sVMOWGzb/vA1hwiWc6jm3MvQDTogQkiqIhJV0nBQBTU+3okKCFDy9WwferkHjtxib7t3xIUQtHxnIwtx4mpg26/HfwVNVDb4oI9RHmx5WGelRVlrtiw43zboCLaxv46AZeB3IlTkwouebTr1y2NjSpHz68WNFjHvupy3q8TFn3Hos2IAk4Ju5dCo8B3wP7VPr/FGaKiG+T+v+TQqIrOqMTL1VdWV1DdmcbO8KXBz6esmYWYKPwDL5b5FA1a0hwapHiom0r/cKaoqr+27/XcrS5UwSMbQAAAABJRU5ErkJggg==" alt="DeepWiki"></a>
@@ -12,7 +12,7 @@
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-**HiClaw 是一个开源的多 Agent 协作系统。让多个 Agent 在 Matrix 房间中协作，人类全程可见、随时可介入。 设计了 Manager - Workers 协作架构，人类可通过 Manager Agent 可协调多个 Worker Agents，完成复杂任务，从而加速实现 OPOC（一人一公司）和企业数字员工。**
+**HiClaw 是一个开源的协作式多智能体操作系统。让多个 Agent 在 Matrix 房间中协作，人类全程可见、随时可介入。 设计了 Manager - Workers 协作架构，人类可通过 Manager Agent 可协调多个 Worker Agents，完成复杂任务，从而加速实现 OPOC（一人一公司）和企业数字员工。**
 
 HiClaw 并不和其他 xxClaw 对标，非龙虾本虾，而是一个多 Agent 操作系统。
 - 🦞 每个 Claw 支持用户自定义：可以是 OpenClaw，也可以是 Copaw、NanoClaw、ZeroClaw 或是企业自建的 Agent，目前预装的是 OpenClaw 和 Copaw。
@@ -292,7 +292,7 @@ make help  # 查看所有可用目标
 - 微信群——扫码加入：
 
 <p align="center">
-  <img src="https://img.alicdn.com/imgextra/i1/O1CN01ZwP1gd27xlmxoqSa8_!!6000000007864-2-tps-752-740.png" width="200" alt="微信群" />
+  <img src="https://img.alicdn.com/imgextra/i4/O1CN011Gb82b1TNyCQlA5eh_!!6000000002371-2-tps-790-752.png" width="200" alt="微信群" />
 </p>
 
 ## 许可证
