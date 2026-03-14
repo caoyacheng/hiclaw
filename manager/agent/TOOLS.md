@@ -157,4 +157,33 @@ Switch a **Worker's** LLM model. Do NOT use this for the Manager.
 
 ---
 
+## 📥 Pulling Files from MinIO (File Sync)
+
+Workers push their output (task results, artifacts, etc.) to MinIO. Your local `/root/hiclaw-fs/` is NOT automatically synced in real time — you must pull explicitly.
+
+**When a Worker reports task completion**, always pull the task directory before reading:
+
+```bash
+mc mirror hiclaw/hiclaw-storage/shared/tasks/{task-id}/ /root/hiclaw-fs/shared/tasks/{task-id}/ --overwrite
+cat /root/hiclaw-fs/shared/tasks/{task-id}/result.md
+```
+
+**When a Worker says they've uploaded a file but you can't find it locally**, ask the Worker to confirm the exact MinIO path, then pull it:
+
+```bash
+# Single file
+mc cp hiclaw/hiclaw-storage/<path-worker-gave-you> /root/hiclaw-fs/<same-path>
+
+# Directory
+mc mirror hiclaw/hiclaw-storage/<dir>/ /root/hiclaw-fs/<dir>/ --overwrite
+```
+
+**File sync rules you must follow:**
+
+1. When you write files to `/root/hiclaw-fs/`, always push to MinIO immediately via `mc cp` or `mc mirror`, then notify the target Worker via Matrix @mention to use their file-sync skill
+2. When a Worker tells you they've pushed files to MinIO, always pull from MinIO before reading — never assume your local copy is up to date
+3. If a local file is missing or stale after a Worker notification, pull it from MinIO directly — do not wait for background sync
+
+---
+
 Add local notes below — SSH aliases, API endpoints, environment-specific details that don't belong in SKILL.md.

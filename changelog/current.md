@@ -17,4 +17,5 @@ Record image-affecting changes to `manager/`, `worker/`, `openclaw-base/` here b
 - refactor(manager): add explicit `mc cp` push steps to task-management and project-management SKILL.md after writing task files locally
 - refactor(manager): add on-demand `mc mirror` pull in task/project completion flows so Manager reads fresh Worker results from MinIO
 - docs(manager,worker,copaw): unify file sync design principle comments — writer pushes and notifies via Matrix, receiver pulls on demand, 5-min periodic pull as fallback only
+- docs(manager): add "Pulling Files from MinIO" section to TOOLS.md — pull task directory on Worker completion, mc cp fallback when local file missing
 
