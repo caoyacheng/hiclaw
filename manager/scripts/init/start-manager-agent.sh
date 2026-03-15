@@ -298,15 +298,26 @@ log "Model: ${MODEL_NAME} (context=${MODEL_CONTEXT_WINDOW}, maxTokens=${MODEL_MA
 
 if [ -f /root/manager-workspace/openclaw.json ]; then
     log "Manager openclaw.json already exists, updating dynamic fields only (preserving user customizations)..."
+    # Merge known models into existing config (add missing, preserve user-added)
+    # Use known-models.json (valid JSON) instead of template (contains ${VAR} placeholders)
+    KNOWN_MODELS=$(cat /opt/hiclaw/configs/known-models.json 2>/dev/null || echo '[]')
     jq --arg token "${MANAGER_TOKEN}" \
        --arg key "${HICLAW_MANAGER_GATEWAY_KEY}" \
        --arg model "${MODEL_NAME}" \
        --argjson e2ee "${MATRIX_E2EE_ENABLED}" \
-       '.channels.matrix.accessToken = $token | .hooks.token = $key | .models.providers["hiclaw-gateway"].apiKey = $key
+       --argjson known_models "${KNOWN_MODELS}" \
+       '
+        # Merge known models: add any model id not already present
+        .models.providers["hiclaw-gateway"].models as $existing
+        | ($existing | map(.id)) as $existing_ids
+        | ($known_models | map(select(.id as $id | $existing_ids | index($id) | not))) as $new
+        | .models.providers["hiclaw-gateway"].models = ($existing + $new)
+        | .channels.matrix.accessToken = $token | .hooks.token = $key | .models.providers["hiclaw-gateway"].apiKey = $key
         | .agents.defaults.model.primary = ("hiclaw-gateway/" + $model)
         | .commands.restart = true
         | .gateway.controlUi.dangerouslyDisableDeviceAuth = true
-        | .channels.matrix.encryption = $e2ee' \
+        | .channels.matrix.encryption = $e2ee
+       ' \
        /root/manager-workspace/openclaw.json > /tmp/openclaw.json.tmp && \
         mv /tmp/openclaw.json.tmp /root/manager-workspace/openclaw.json
     # Verify the token was written correctly
@@ -333,6 +344,44 @@ if container_api_available; then
 else
     log "No container runtime socket found — Worker creation will output install commands"
     export HICLAW_CONTAINER_RUNTIME="none"
+fi
+
+# ============================================================
+# Upgrade Worker openclaw.json: merge known models into existing configs
+# Existing workers in MinIO may have old single-model configs.
+# Merge template models so they can hot-switch without restart.
+# ============================================================
+REGISTRY_FILE="/root/manager-workspace/workers-registry.json"
+if [ -f "${REGISTRY_FILE}" ]; then
+    # Use known-models.json (valid JSON) instead of template (contains ${VAR} placeholders)
+    KNOWN_MODELS_FILE="/opt/hiclaw/configs/known-models.json"
+    if [ -f "${KNOWN_MODELS_FILE}" ]; then
+        _KNOWN_MODELS=$(cat "${KNOWN_MODELS_FILE}")
+        _known_count=$(echo "${_KNOWN_MODELS}" | jq 'length')
+        for _wname in $(jq -r '.workers | keys[]' "${REGISTRY_FILE}" 2>/dev/null); do
+            [ -z "${_wname}" ] && continue
+            _minio_path="hiclaw/hiclaw-storage/agents/${_wname}/openclaw.json"
+            _tmp_in="/tmp/openclaw-${_wname}-models-upgrade-in.json"
+            if mc cp "${_minio_path}" "${_tmp_in}" 2>/dev/null; then
+                _existing_count=$(jq '.models.providers["hiclaw-gateway"].models | length' "${_tmp_in}" 2>/dev/null || echo "0")
+                if [ "${_existing_count}" -lt "${_known_count}" ]; then
+                    _tmp_out="/tmp/openclaw-${_wname}-models-upgrade-out.json"
+                    jq --argjson known_models "${_KNOWN_MODELS}" '
+                        .models.providers["hiclaw-gateway"].models as $existing
+                        | ($existing | map(.id)) as $existing_ids
+                        | ($known_models | map(select(.id as $id | $existing_ids | index($id) | not))) as $new
+                        | .models.providers["hiclaw-gateway"].models = ($existing + $new)
+                    ' "${_tmp_in}" > "${_tmp_out}" 2>/dev/null
+                    if mc cp "${_tmp_out}" "${_minio_path}" 2>/dev/null; then
+                        _new_count=$(jq '.models.providers["hiclaw-gateway"].models | length' "${_tmp_out}" 2>/dev/null)
+                        log "Worker ${_wname}: merged models (${_existing_count} -> ${_new_count})"
+                    fi
+                    rm -f "${_tmp_out}"
+                fi
+                rm -f "${_tmp_in}"
+            fi
+        done
+    fi
 fi
 
 # ============================================================
